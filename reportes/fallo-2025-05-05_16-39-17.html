@@ -1,0 +1,1377 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Tests - test-results</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        /* Estilos integrados */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        .card {
+            border-radius: 0.5rem;
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        .card-header {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        .steps-toggle, .error-toggle, .attachments-toggle, .logs-toggle {
+            cursor: pointer;
+            color: #6c757d;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        .steps-toggle:hover, .error-toggle:hover, .attachments-toggle:hover, .logs-toggle:hover {
+            color: #0d6efd;
+        }
+        .error-message {
+            background-color: #f8d7da;
+            border-radius: 0.375rem;
+            border-left: 4px solid #dc3545;
+            color: #721c24;
+            font-family: monospace;
+            overflow-x: auto;
+            font-size: 0.875rem;
+        }
+        .log-message {
+            background-color: #f8f9fa;
+            border-radius: 0.375rem;
+            border-left: 4px solid #0d6efd;
+            font-family: monospace;
+            overflow-x: auto;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+        .log-info {
+            color: #0d6efd;
+        }
+        .log-warn {
+            color: #ffc107;
+        }
+        .log-error {
+            color: #dc3545;
+        }
+        .steps-list {
+            font-size: 0.875rem;
+        }
+        .list-group-item-sm {
+            padding: 0.5rem 1rem;
+        }
+        .test-item {
+            border-left: 4px solid transparent;
+            transition: background-color 0.2s;
+        }
+        .test-item:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+        .passed-test {
+            border-left-color: #198754;
+        }
+        .failed-test {
+            border-left-color: #dc3545;
+        }
+        .skipped-test {
+            border-left-color: #ffc107;
+        }
+        .filter-btn {
+            box-shadow: none !important;
+            transition: all 0.2s;
+        }
+        .filter-btn.active {
+            font-weight: bold;
+            transform: translateY(1px);
+            background-color: #e9ecef;
+            border-color: #212529;
+        }
+        .collapse {
+            transition: all 0.2s ease;
+        }
+        @media (max-width: 767.98px) {
+            .badge-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .badge-container .badge {
+                margin-top: 0.25rem;
+            }
+            .col-md-4 {
+                margin-bottom: 1rem;
+            }
+        }
+        .accordion-button:not(.collapsed) {
+            background-color: rgba(13, 110, 253, 0.05);
+            color: #0d6efd;
+        }
+        .accordion-button:focus {
+            box-shadow: none;
+            border-color: rgba(0, 0, 0, 0.125);
+        }
+        .badge {
+            font-weight: 500;
+            padding: 0.35em 0.65em;
+        }
+        .progress {
+            background-color: #e9ecef;
+            border-radius: 0.375rem;
+            overflow: hidden;
+        }
+        .btn-outline-primary {
+            transition: all 0.2s;
+        }
+        .btn-outline-primary:hover {
+            transform: translateY(-1px);
+        }
+        footer {
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        #testsAccordion .accordion-item {
+            margin-bottom: 0.5rem;
+            border-radius: 0.375rem;
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.125);
+        }
+        #testsAccordion .accordion-button {
+            padding: 1rem 1.25rem;
+        }
+        .bi {
+            vertical-align: -0.125em;
+        }
+        pre {
+            margin-bottom: 0;
+        }
+        pre code {
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .system-out, .system-err {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        /* Estilos para el SVG */
+        .chart-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 220px;
+        }
+        .chart-legend {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 0 10px;
+        }
+        .legend-color {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .chart-title {
+            font-size: 1rem;
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        /* Estilo para elementos ocultos */
+        .hidden-test {
+            display: none !important;
+        }
+        /* Añadir estas líneas en la sección de estilos */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    line-height: 1.6;
+}
+
+.card {
+    border-radius: 0.75rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.navbar {
+    background: linear-gradient(135deg, #0d6efd, #0a58ca) !important;
+    box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Mejorar aspecto de badges */
+.badge {
+    font-weight: 600;
+    padding: 0.5em 0.8em;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+/* Añadir para mejorar el gráfico */
+.chart-container {
+    margin: 1rem auto;
+    transition: transform 0.3s;
+}
+
+.chart-container:hover {
+    transform: scale(1.05);
+}
+
+.chart-legend {
+    margin-top: 1.5rem;
+    padding: 0.75rem;
+    background-color: rgba(248, 249, 250, 0.8);
+    border-radius: 0.5rem;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    margin: 0.5rem 1rem;
+    font-weight: 500;
+}
+
+/* Mejorar la barra de progreso */
+.progress {
+    height: 30px;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: inset 0 0.1rem 0.25rem rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar {
+    transition: width 1s ease-in-out;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+/* Mejorar la apariencia de los tests */
+.test-item {
+    border-left: 6px solid transparent;
+    transition: all 0.2s;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.test-item:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+    transform: translateX(3px);
+}
+
+.passed-test {
+    border-left-color: #198754;
+    background-color: rgba(25, 135, 84, 0.05);
+}
+
+.failed-test {
+    border-left-color: #dc3545;
+    background-color: rgba(220, 53, 69, 0.05);
+}
+
+.skipped-test {
+    border-left-color: #ffc107;
+    background-color: rgba(255, 193, 7, 0.05);
+}
+
+/* Mejorar los botones de filtro */
+.filter-btn {
+    border-radius: 2rem;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    border-width: 2px;
+    transition: all 0.3s;
+}
+
+.filter-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+}
+
+.filter-btn.active {
+    font-weight: 600;
+    transform: translateY(0);
+    box-shadow: inset 0 0.1rem 0.25rem rgba(0, 0, 0, 0.1);
+}
+/* Mejorar logs y mensajes de error */
+.error-message {
+    border-radius: 0.5rem;
+    border-left: 6px solid #dc3545;
+    box-shadow: 0 0.25rem 0.5rem rgba(220, 53, 69, 0.1);
+    font-family: 'Consolas', 'Monaco', monospace;
+    padding: 1rem;
+    max-height: 400px;
+}
+
+.log-message {
+    border-radius: 0.5rem;
+    border-left: 6px solid #0d6efd;
+    box-shadow: 0 0.25rem 0.5rem rgba(13, 110, 253, 0.1);
+    font-family: 'Consolas', 'Monaco', monospace;
+    padding: 1rem;
+    max-height: 400px;
+}
+
+/* Mejorar toggles para logs y errores */
+.steps-toggle, .error-toggle, .attachments-toggle, .logs-toggle {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    background-color: #f8f9fa;
+    transition: all 0.2s;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+}
+
+.steps-toggle:hover, .error-toggle:hover, .attachments-toggle:hover, .logs-toggle:hover {
+    background-color: #e9ecef;
+    color: #0d6efd;
+    transform: translateX(3px);
+}
+/* Añadir animaciones y transiciones */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.test-item, .card, .progress-bar {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.accordion-button::after {
+    transition: transform 0.3s ease;
+}
+
+.accordion-button:not(.collapsed)::after {
+    transform: rotate(-180deg);
+}
+/* Mejorar diseño responsive */
+@media (max-width: 767.98px) {
+    .filter-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 0.5rem;
+    }
+    
+    .filter-btn {
+        margin: 0.25rem;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.8rem;
+    }
+    
+    .test-item {
+        padding: 0.75rem;
+    }
+    
+    .progress {
+        height: 20px;
+    }
+    
+    .chart-container {
+        max-width: 200px;
+        margin: 0 auto;
+    }
+    
+    h1.card-title {
+        font-size: 1.5rem;
+    }
+    
+    .navbar .container {
+        flex-direction: column;
+        padding: 0.5rem 0;
+    }
+}
+    </style>
+    <!-- IMPORTANTE: Definir la función filterTests en el head para garantizar que esté disponible -->
+    <script>
+        // Variable global para mantener el estado del filtro
+        window.selectedStatus = 'all';
+        
+        // Función para filtrar por estado (pasado, fallado, omitido)
+        function filterTests(status) {
+            // Guardar el estado seleccionado
+            window.selectedStatus = status;
+            
+            // Aplicar todos los filtros
+            applyFilters();
+            
+            // Actualizar clases activas en los botones de estado
+            const buttons = document.querySelectorAll('.btn-outline-success, .btn-outline-danger, .btn-outline-warning, .btn-outline-dark');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Añadir clase activa al botón correspondiente
+            if (status === 'passed') {
+                document.querySelector('.btn-outline-success').classList.add('active');
+            } else if (status === 'failed') {
+                document.querySelector('.btn-outline-danger').classList.add('active');
+            } else if (status === 'skipped') {
+                document.querySelector('.btn-outline-warning').classList.add('active');
+            } else {
+                document.querySelector('.btn-outline-dark').classList.add('active');
+            }
+        }
+    </script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-card-checklist me-2"></i>
+                TestReporter
+            </a>
+            <span class="navbar-text text-white">
+                Informe generado: 2025-04-28 18:26:37
+            </span>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h1 class="card-title">
+                            <i class="bi bi-folder me-2"></i>
+                            Proyecto: test-results
+                        </h1>
+                        <p class="card-text text-muted">
+                            Resumen de resultados de tests automatizados con Playwright
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-bar-chart-line me-2"></i>
+                            Resumen
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-4">
+                            <div class="text-center">
+                                <h2 class="mb-0">2</h2>
+                                <p class="text-muted mb-0">Tests Totales</p>
+                            </div>
+                            <div class="text-center">
+                                <h2 class="mb-0 text-success">1</h2>
+                                <p class="text-muted mb-0">Pasaron</p>
+                            </div>
+                            <div class="text-center">
+                                <h2 class="mb-0 text-danger">0</h2>
+                                <p class="text-muted mb-0">Fallaron</p>
+                            </div>
+                            <div class="text-center">
+                                <h2 class="mb-0 text-warning">1</h2>
+                                <p class="text-muted mb-0">Omitidos</p>
+                            </div>
+                        </div>
+                        <div class="progress mb-3" style="height: 25px;">
+                            <div class="progress-bar bg-success" 
+                                role="progressbar" 
+                                style="width: 50.0%" 
+                                aria-valuenow="50.0" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100">50.0%</div>
+                            
+                            <div class="progress-bar bg-danger" 
+                                role="progressbar" 
+                                style="width: 0.0%" 
+                                aria-valuenow="0.0" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100">0.0%</div>
+                            
+                            <div class="progress-bar bg-warning" 
+                                role="progressbar" 
+                                style="width: 50.0%" 
+                                aria-valuenow="50.0" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100">50.0%</div>
+                        </div>
+                        <p class="text-muted mb-0">
+                            <i class="bi bi-clock me-1"></i>
+                            Tiempo total: 179.64s
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-pie-chart me-2"></i>
+                            Distribución
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <svg width="200" height="200" viewBox="0 0 100 100">
+  <path d="M 50 50 L 50.0 5.0 A 45 45 0 0 1 50.0001194115407 94.99999999984156 Z" fill="#198754" />
+  <path d="M 50 50 L 50.0001194115407 94.99999999984156 A 45 45 0 0 1 49.9997611769186 5.00000000063374 Z" fill="#ffc107" />
+  <circle cx="50" cy="50" r="20" fill="white" />
+</svg>
+                        </div>
+                        <div class="chart-legend">
+                            <div class="legend-item">
+                                <span class="legend-color" style="background-color: #198754;"></span>
+                                <span>Pasados (1)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background-color: #dc3545;"></span>
+                                <span>Fallados (0)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background-color: #ffc107;"></span>
+                                <span>Omitidos (1)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-list-check me-2"></i>
+                    Resultados Detallados
+                </h5>
+                <div class="filter-buttons">
+                    <button class="btn btn-sm btn-outline-success me-1 filter-btn" onclick="filterTests('passed')">
+                        <i class="bi bi-check-circle me-1"></i>
+                        Pasados
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger me-1 filter-btn" onclick="filterTests('failed')">
+                        <i class="bi bi-x-circle me-1"></i>
+                        Fallados
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning me-1 filter-btn" onclick="filterTests('skipped')">
+                        <i class="bi bi-skip-forward me-1"></i>
+                        Omitidos
+                    </button>
+                    <button class="btn btn-sm btn-outline-dark filter-btn active" onclick="filterTests('all')">
+                        <i class="bi bi-collection me-1"></i>
+                        Todos
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="filter-container mt-3 px-3">
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <div class="card p-2">
+                                <h6 class="mb-2">Tipo de Viaje</h6>
+                                <div id="trip-type-filters" class="d-flex flex-wrap">
+                                    <div class="form-check me-2 mb-1">
+                                        <input class="form-check-input" type="checkbox" value="all" id="trip-all" checked onchange="updateTripFilters(this)">
+                                        <label class="form-check-label" for="trip-all">
+                                            Todos
+                                        </label>
+                                    </div>
+                                    <div class="form-check me-2 mb-1">
+                                        <input class="form-check-input" type="checkbox" value="OW" id="trip-ow" onchange="updateTripFilters(this)">
+                                        <label class="form-check-label" for="trip-ow">
+                                            Solo ida (OW)
+                                        </label>
+                                    </div>
+                                    <div class="form-check me-2 mb-1">
+                                        <input class="form-check-input" type="checkbox" value="RT" id="trip-rt" onchange="updateTripFilters(this)">
+                                        <label class="form-check-label" for="trip-rt">
+                                            Ida y vuelta (RT)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <div class="card p-2">
+                                <h6 class="mb-2">Pasajeros</h6>
+                                <div id="passenger-filters" class="d-flex flex-wrap">
+                                    <div class="form-check me-2 mb-1">
+                                        <input class="form-check-input" type="checkbox" value="all" id="passenger-all" checked onchange="updatePassengerFilters(this)">
+                                        <label class="form-check-label" for="passenger-all">
+                                            Todos
+                                        </label>
+                                    </div>
+                                    <div class="form-check me-2 mb-1">
+                                        <input class="form-check-input" type="checkbox" value="1A" id="passenger-1a" onchange="updatePassengerFilters(this)">
+                                        <label class="form-check-label" for="passenger-1a">
+                                            1 Adulto
+                                        </label>
+                                    </div>
+                                    <div class="form-check me-2 mb-1">
+                                        <input class="form-check-input" type="checkbox" value="2A" id="passenger-2a" onchange="updatePassengerFilters(this)">
+                                        <label class="form-check-label" for="passenger-2a">
+                                            2 Adultos
+                                        </label>
+                                    </div>
+                                    <div class="form-check me-2 mb-1">
+                                        <input class="form-check-input" type="checkbox" value="1A1C" id="passenger-1a1c" onchange="updatePassengerFilters(this)">
+                                        <label class="form-check-label" for="passenger-1a1c">
+                                            1A + 1 Niño
+                                        </label>
+                                    </div>
+                                    <div class="form-check me-2 mb-1">
+                                        <input class="form-check-input" type="checkbox" value="1A3C" id="passenger-1a3c" onchange="updatePassengerFilters(this)">
+                                        <label class="form-check-label" for="passenger-1a3c">
+                                            1A + 3 Niños
+                                        </label>
+                                    </div>
+                                    <div class="form-check me-2 mb-1">
+                                        <input class="form-check-input" type="checkbox" value="1A1I" id="passenger-1a1i" onchange="updatePassengerFilters(this)">
+                                        <label class="form-check-label" for="passenger-1a1i">
+                                            1A + 1 Infante
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <div class="card p-2">
+                                <h6 class="mb-2">Clase de Vuelo</h6>
+                                <div id="cabin-filters" class="d-flex flex-wrap">
+                                    <div class="form-check me-2 mb-1">
+                                        <input class="form-check-input" type="checkbox" value="all" id="cabin-all" checked onchange="updateCabinFilters(this)">
+                                        <label class="form-check-label" for="cabin-all">
+                                            Todas
+                                        </label>
+                                    </div>
+                                    <div class="form-check me-2 mb-1">
+                                        <input class="form-check-input" type="checkbox" value="ELIGHT" id="cabin-elight" onchange="updateCabinFilters(this)">
+                                        <label class="form-check-label" for="cabin-elight">
+                                            Economy Light
+                                        </label>
+                                    </div>
+                                    <div class="form-check me-2 mb-1">
+                                        <input class="form-check-input" type="checkbox" value="ECOMFORT" id="cabin-ecomfort" onchange="updateCabinFilters(this)">
+                                        <label class="form-check-label" for="cabin-ecomfort">
+                                            Economy Comfort
+                                        </label>
+                                    </div>
+                                    <div class="form-check me-2 mb-1">
+                                        <input class="form-check-input" type="checkbox" value="EEXTRA" id="cabin-eextra" onchange="updateCabinFilters(this)">
+                                        <label class="form-check-label" for="cabin-eextra">
+                                            Economy Extra
+                                        </label>
+                                    </div>
+                                    <div class="form-check me-2 mb-1">
+                                        <input class="form-check-input" type="checkbox" value="PLIGHT" id="cabin-plight" onchange="updateCabinFilters(this)">
+                                        <label class="form-check-label" for="cabin-plight">
+                                            Premium Light
+                                        </label>
+                                    </div>
+                                    <div class="form-check me-2 mb-1">
+                                        <input class="form-check-input" type="checkbox" value="PCOMFORT" id="cabin-pcomfort" onchange="updateCabinFilters(this)">
+                                        <label class="form-check-label" for="cabin-pcomfort">
+                                            Premium Comfort
+                                        </label>
+                                    </div>
+                                    <div class="form-check me-2 mb-1">
+                                        <input class="form-check-input" type="checkbox" value="PEXTRA" id="cabin-pextra" onchange="updateCabinFilters(this)">
+                                        <label class="form-check-label" for="cabin-pextra">
+                                            Premium Extra
+                                        </label>
+                                    </div>
+                                    <div class="form-check me-2 mb-1">
+                                        <input class="form-check-input" type="checkbox" value="MIXED" id="cabin-mixed" onchange="updateCabinFilters(this)">
+                                        <label class="form-check-label" for="cabin-mixed">
+                                            Combinaciones
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <div class="card p-2">
+                                <h6 class="mb-2">Servicios</h6>
+                                <div id="service-filters" class="d-flex flex-wrap">
+                                    <div class="form-check me-2 mb-1">
+                                        <input class="form-check-input" type="checkbox" value="all" id="service-all" checked onchange="updateServiceFilters(this)">
+                                        <label class="form-check-label" for="service-all">
+                                            Todos
+                                        </label>
+                                    </div>
+                                    <div class="form-check me-2 mb-1">
+                                        <input class="form-check-input" type="checkbox" value="NO_ASST" id="service-no-asst" onchange="updateServiceFilters(this)">
+                                        <label class="form-check-label" for="service-no-asst">
+                                            Sin Asistencia
+                                        </label>
+                                    </div>
+                                    <div class="form-check me-2 mb-1">
+                                        <input class="form-check-input" type="checkbox" value="ASST" id="service-asst" onchange="updateServiceFilters(this)">
+                                        <label class="form-check-label" for="service-asst">
+                                            Con Asistencia
+                                        </label>
+                                    </div>
+                                    <div class="form-check me-2 mb-1">
+                                        <input class="form-check-input" type="checkbox" value="FULL_ASST" id="service-full-asst" onchange="updateServiceFilters(this)">
+                                        <label class="form-check-label" for="service-full-asst">
+                                            Asistencia Completa
+                                        </label>
+                                    </div>
+                                    <div class="form-check me-2 mb-1">
+                                        <input class="form-check-input" type="checkbox" value="SEAT" id="service-seat" onchange="updateServiceFilters(this)">
+                                        <label class="form-check-label" for="service-seat">
+                                            Con Asiento
+                                        </label>
+                                    </div>
+                                    <div class="form-check me-2 mb-1">
+                                        <input class="form-check-input" type="checkbox" value="NO_SEAT" id="service-no-seat" onchange="updateServiceFilters(this)">
+                                        <label class="form-check-label" for="service-no-seat">
+                                            Sin Asiento
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+<div class="accordion" id="testsAccordion">
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="suite-heading-1">
+            <button class="accordion-button " type="button" data-bs-toggle="collapse" 
+                data-bs-target="#suite-collapse-1" 
+                aria-expanded="true" 
+                aria-controls="suite-collapse-1">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <div>
+                        <i class="bi bi-file-earmark-code me-2"></i>
+                        <strong>Booking\seat-custom-cabins-rt.spec.ts</strong>
+                    </div>
+                    <div class="badge-container">
+                        <span class="badge bg-success me-1">1 Pasados</span><span class="badge bg-warning me-1">1 Omitidos</span>
+                    </div>
+                </div>
+            </button>
+        </h2>
+        <div id="suite-collapse-1" 
+            class="accordion-collapse collapse show" 
+            aria-labelledby="suite-heading-1" 
+            data-bs-parent="#testsAccordion">
+            <div class="accordion-body p-0">
+                <div class="list-group list-group-flush">
+                    
+<div class="list-group-item test-item passed-test" 
+     data-trip="UNKNOWN" 
+     data-passenger="UNKNOWN" 
+     data-cabin="UNKNOWN"
+     data-service="UNKNOWN"
+     data-seat="UNKNOWN"
+     data-currency="UNKNOWN"
+     data-language="UNKNOWN">
+    <div class="d-flex w-100 justify-content-between align-items-start mb-2">
+        <h6 class="mb-1">
+            <i class="bi bi-check-circle-fill text-success me-2"></i>
+            Pruebas de cabinas con selección de asiento › RT-1A-ECOMFORT-NO_ASST-SEAT-USD-EN-101: Combinación Economy Comfort con asiento
+        </h6>
+        <span class="badge bg-light text-dark">
+            <i class="bi bi-clock"></i>
+            172.02s
+        </span>
+    </div>
+    
+    
+<div class="logs-container mt-2">
+    <p class="mb-2 logs-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#logs-1-1">
+        <i class="bi bi-caret-right-fill me-1"></i>
+        <i class="bi bi-caret-down-fill me-1 d-none"></i>
+        Ver logs de ejecución
+    </p>
+    <div class="collapse" id="logs-1-1">
+        <div class="log-message p-3 system-out">
+            <pre><code>
+[INFO] Ejecutando prueba: Prueba personalizada - Economy Comfort - con asiento
+[INFO] Intento 1/3
+[INFO] Iniciando prueba: Prueba personalizada - Economy Comfort - con asiento
+[INFO] Inicializando test
+[INFO] Intento 2/3
+[INFO] Iniciando prueba: Prueba personalizada - Economy Comfort - con asiento
+[INFO] Inicializando test
+[INFO] Modal de cookies no detectado, continuando con la prueba
+[INFO] Configurando idioma y moneda
+[INFO] Ejecutando setLanguageAndCurrency (intento 1/2)
+[INFO] Idioma configurado a EN, Moneda configurada a USD
+[INFO] Test inicializado correctamente
+[INFO] Tipo de viaje se mantiene como ida y vuelta (por defecto)
+[INFO] Seleccionando origen: BCN, destino: SCL
+[INFO] Origen y destino seleccionados correctamente
+[INFO] Seleccionando fechas de vuelo
+[INFO] Ejecutando selectFlightDates (intento 1/2)
+[INFO] Esperando 1000ms antes del siguiente intento...
+[INFO] Estabilizando página antes del reintento 2...
+[INFO] Ejecutando selectFlightDates (intento 2/2)
+Selected departure date: { year: [32m&#x27;2025&#x27;[39m, month: [32m&#x27;10&#x27;[39m, index: [33m6[39m, value: [33m16[39m }
+Selected return date: { year: [32m&#x27;2025&#x27;[39m, month: [32m&#x27;10&#x27;[39m, index: [33m7[39m, value: [33m18[39m }
+[INFO] Fechas de vuelo seleccionadas correctamente
+[INFO] Seleccionando pasajeros: 1 adultos, 0 niños, 0 infantes
+Ajustando número de pasajeros
+[INFO] Pasajeros seleccionados correctamente y nueva pestaña abierta
+[INFO] Seleccionando clases y tipos de vuelo
+[INFO] Ejecutando selectFlightClasses (intento 1/3)
+[INFO] Capturando información del vuelo de ida
+[INFO] Extrayendo información de vuelo OUTBOUND, tarjeta #0
+[INFO] Información del vuelo de ida capturada con éxito {
+  direction: [32m&#x27;OUTBOUND&#x27;[39m,
+  date: [32m&#x27;Thu, Oct 16&#x27;[39m,
+  origin: { code: [32m&#x27;BCN&#x27;[39m, name: [32m&#x27;Barcelona&#x27;[39m },
+  destination: { code: [32m&#x27;SCL&#x27;[39m, name: [32m&#x27;Santiago&#x27;[39m },
+  times: {
+    departure: [32m&#x27;00:05&#x27;[39m,
+    arrival: [32m&#x27;09:40&#x27;[39m,
+    duration: [32m&#x27;14h 35m&#x27;[39m,
+    nextDay: [33mfalse[39m
+  },
+  airline: [32m&#x27;IB&#x27;[39m,
+  flightNumber: [32m&#x27;&#x27;[39m,
+  cabinOptions: {
+    economy: { name: [32m&#x27;ECONOMY&#x27;[39m, price: [32m&#x27;$544&#x27;[39m },
+    premium: { name: [32m&#x27;PREMIUM&#x27;[39m, price: [32m&#x27;$979&#x27;[39m }
+  },
+  cardSelector: [32m&#x27;.outbound-flight-container .card-flight:nth-child(1)&#x27;[39m,
+  selectedCabin: { class: [32m&#x27;Economy&#x27;[39m, type: [32m&#x27;Comfort&#x27;[39m, fullName: [32m&#x27;Economy Comfort&#x27;[39m }
+}
+[INFO] Seleccionando cabina para vuelo de ida: Economy
+[INFO] Successfully clicked the element: .outbound-flight-container .card-flight:nth-child(1) .btn-economy
+[INFO] Capturando información del vuelo de vuelta
+[INFO] Extrayendo información de vuelo INBOUND, tarjeta #0
+[INFO] Información del vuelo de vuelta capturada con éxito {
+  direction: [32m&#x27;INBOUND&#x27;[39m,
+  date: [32m&#x27;Sat, Oct 18&#x27;[39m,
+  origin: { code: [32m&#x27;SCL&#x27;[39m, name: [32m&#x27;Santiago&#x27;[39m },
+  destination: { code: [32m&#x27;BCN&#x27;[39m, name: [32m&#x27;Barcelona&#x27;[39m },
+  times: {
+    departure: [32m&#x27;11:25&#x27;[39m,
+    arrival: [32m&#x27;06:10&#x27;[39m,
+    duration: [32m&#x27;13h 45m&#x27;[39m,
+    nextDay: [33mtrue[39m
+  },
+  airline: [32m&#x27;IB&#x27;[39m,
+  flightNumber: [32m&#x27;&#x27;[39m,
+  cabinOptions: {
+    economy: { name: [32m&#x27;ECONOMY&#x27;[39m, price: [32m&#x27;$420&#x27;[39m },
+    premium: { name: [32m&#x27;PREMIUM&#x27;[39m, price: [32m&#x27;$695&#x27;[39m }
+  },
+  cardSelector: [32m&#x27;.inbound-flight-container .card-flight:nth-child(1)&#x27;[39m,
+  selectedCabin: { class: [32m&#x27;Economy&#x27;[39m, type: [32m&#x27;Comfort&#x27;[39m, fullName: [32m&#x27;Economy Comfort&#x27;[39m }
+}
+[INFO] Seleccionando cabina para vuelo de vuelta: Economy
+[INFO] Successfully clicked the element: .inbound-flight-container .card-flight:nth-child(1) .btn-economy
+[INFO] Verificando estado de la página después de selectFlights
+[INFO] Esperando botón de continuar...
+[INFO] Clic en botón Continue realizado
+[INFO] Esperando navegación después de clic en Continue
+[INFO] URL después de Continue: https://lv-fndoor-ecommerce-sbx-ghdubdbgdtcsane6.a01.azurefd.net/nwe/passenger/?forcedCulture=en
+[INFO] Información de vuelo capturada y almacenada {
+  outbound: {
+    direction: [32m&#x27;OUTBOUND&#x27;[39m,
+    date: [32m&#x27;Thu, Oct 16&#x27;[39m,
+    origin: { code: [32m&#x27;BCN&#x27;[39m, name: [32m&#x27;Barcelona&#x27;[39m },
+    destination: { code: [32m&#x27;SCL&#x27;[39m, name: [32m&#x27;Santiago&#x27;[39m },
+    times: {
+      departure: [32m&#x27;00:05&#x27;[39m,
+      arrival: [32m&#x27;09:40&#x27;[39m,
+      duration: [32m&#x27;14h 35m&#x27;[39m,
+      nextDay: [33mfalse[39m
+    },
+    airline: [32m&#x27;IB&#x27;[39m,
+    flightNumber: [32m&#x27;&#x27;[39m,
+    cabinOptions: { economy: [36m[Object][39m, premium: [36m[Object][39m },
+    cardSelector: [32m&#x27;.outbound-flight-container .card-flight:nth-child(1)&#x27;[39m,
+    selectedCabin: { class: [32m&#x27;Economy&#x27;[39m, type: [32m&#x27;Comfort&#x27;[39m, fullName: [32m&#x27;Economy Comfort&#x27;[39m }
+  },
+  return: {
+    direction: [32m&#x27;INBOUND&#x27;[39m,
+    date: [32m&#x27;Sat, Oct 18&#x27;[39m,
+    origin: { code: [32m&#x27;SCL&#x27;[39m, name: [32m&#x27;Santiago&#x27;[39m },
+    destination: { code: [32m&#x27;BCN&#x27;[39m, name: [32m&#x27;Barcelona&#x27;[39m },
+    times: {
+      departure: [32m&#x27;11:25&#x27;[39m,
+      arrival: [32m&#x27;06:10&#x27;[39m,
+      duration: [32m&#x27;13h 45m&#x27;[39m,
+      nextDay: [33mtrue[39m
+    },
+    airline: [32m&#x27;IB&#x27;[39m,
+    flightNumber: [32m&#x27;&#x27;[39m,
+    cabinOptions: { economy: [36m[Object][39m, premium: [36m[Object][39m },
+    cardSelector: [32m&#x27;.inbound-flight-container .card-flight:nth-child(1)&#x27;[39m,
+    selectedCabin: { class: [32m&#x27;Economy&#x27;[39m, type: [32m&#x27;Comfort&#x27;[39m, fullName: [32m&#x27;Economy Comfort&#x27;[39m }
+  }
+}
+[INFO] Clases y tipos de vuelo seleccionados correctamente
+[INFO] Completando datos para 1 adultos, 0 niños, 0 infantes
+[INFO] Ejecutando fillPassengerAdult-1 (intento 1/5)
+[INFO] Completando datos para adulto 1 de 1: Juan Perez
+[INFO] Empezando a completar datos para Adult 1: Juan Perez
+[INFO] Formulario para Adult-0 encontrado y visible
+[INFO] Intentando completar nombre (1/5)
+[INFO] Campo nombre completado con: Juan
+[INFO] Intentando completar apellido (1/5)
+[INFO] Campo apellido completado con: Perez
+[INFO] Intentando completar fecha de nacimiento (1/5)
+[INFO] Campo fecha de nacimiento completado con: 04/27/2010
+[INFO] Intentando seleccionar país Afghanistan (1/7)
+[INFO] Clic en combobox de nacionalidad
+[INFO] Escribiendo primeras letras: Afg
+[INFO] País seleccionado (Método 1): &quot;Afghanistan&quot;
+[INFO] Selección de país completada. Valor final: &quot;Afghanistan&quot;
+[INFO] Intentando seleccionar género (1/5)
+[INFO] Género seleccionado: female
+[INFO] Completados todos los datos para Adult 1: Juan Perez
+[INFO] Datos de todos los pasajeros completados correctamente
+[INFO] Completando datos de contacto para customize
+[INFO] Ejecutando fillContactDetails (intento 1/2)
+[INFO] Haciendo clic en &quot;Customize your flight&quot;
+[INFO] ¿Botón &quot;Customize your flight&quot; visible? true
+[INFO] Esperando redirección después de hacer clic (hasta 10 segundos)...
+[INFO] Datos de contacto completados correctamente
+[INFO] URL después de completar datos de contacto: https://lv-fndoor-ecommerce-sbx-ghdubdbgdtcsane6.a01.azurefd.net/nwe/seatmap/?forcedCulture=en
+[INFO] Seleccionando asientos
+[INFO] Ejecutando selectSeats (intento 1/2)
+[INFO] URL actual en selección de asientos: https://lv-fndoor-ecommerce-sbx-ghdubdbgdtcsane6.a01.azurefd.net/nwe/seatmap/?forcedCulture=en
+[INFO] Seleccionando asientos para 1 pasajeros en vuelo ida y vuelta
+[INFO] Seleccionando asiento de ida para pasajero 1
+[INFO] Iniciando selección de asiento ida-pasajero-1
+[INFO] Encontrados 258 asientos disponibles para ida-pasajero-1
+[INFO] Número de asientos seleccionados: 1
+[INFO] Asiento ida-pasajero-1 seleccionado correctamente: 10L
+[INFO] Seleccionando asiento de vuelta alternativo para pasajero 1
+[INFO] Asientos seleccionados: 2, esperados: 2
+[INFO] Haciendo clic en botón Continue
+[INFO] URL después de Continue: https://lv-fndoor-ecommerce-sbx-ghdubdbgdtcsane6.a01.azurefd.net/nwe/ancillaries/?forcedCulture=en
+[INFO] Navegación exitosa a página de ancillaries
+[INFO] Proceso de selección de asientos completado
+[INFO] Detectada página de opciones adicionales. Procediendo...
+[INFO] Omitiendo opciones de equipaje
+[INFO] Ejecutando skipBaggageAndContinue (intento 1/2)
+[INFO] URL actual en skipBaggageAndContinue: https://lv-fndoor-ecommerce-sbx-ghdubdbgdtcsane6.a01.azurefd.net/nwe/ancillaries/?forcedCulture=en
+[INFO] Detectada página de opciones de equipaje y servicios adicionales
+[INFO] Opciones de equipaje omitidas correctamente
+[INFO] Todavía no estamos en la página de pago ni en confirmación. Esperando redirección...
+[INFO] Intento 1/12 de verificar redirección...
+[INFO] URL actual: https://lv-fndoor-ecommerce-sbx-ghdubdbgdtcsane6.a01.azurefd.net/nwe/payment/?forcedCulture=en
+[INFO] ¡Página de pago detectada!
+[INFO] Procediendo con el proceso de pago...
+[INFO] Procesando pago
+[INFO] Iframe de número de tarjeta encontrado.
+[INFO] Número de tarjeta ingresado
+[INFO] Fecha de expiración ingresada
+[INFO] Código de seguridad ingresado
+[INFO] Nombre del titular ingresado
+[INFO] Checkbox marcado
+[INFO] Clic en botón de pago realizado
+[INFO] Pago procesado correctamente
+[INFO] Verificando redirección a la página de confirmación después del pago...
+[INFO] Intento 1/12 de verificar redirección a página de confirmación...
+[INFO] URL actual: https://lv-fndoor-ecommerce-sbx-ghdubdbgdtcsane6.a01.azurefd.net/nwe/confirmation/?forcedCulture=en
+[INFO] ¡Página de confirmación detectada!
+[INFO] Verificando confirmación de reserva
+[INFO] Estamos en la página de confirmación
+[INFO] Reserva confirmada. Código: BOOKINGCODE
+[INFO] Prueba completada exitosamente: Prueba personalizada - Economy Comfort - con asiento
+[INFO] Código de reserva obtenido: BOOKINGCODE
+[INFO] Prueba &quot;Prueba personalizada - Economy Comfort - con asiento&quot; exitosa
+
+</code></pre>
+        </div>
+    </div>
+</div>
+
+    
+    
+<div class="error-container mt-2">
+    <p class="mb-2 error-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#error-1-1">
+        <i class="bi bi-caret-right-fill me-1"></i>
+        <i class="bi bi-caret-down-fill me-1 d-none"></i>
+        Ver errores
+    </p>
+    <div class="collapse" id="error-1-1">
+        <div class="error-message p-3 system-err">
+            <pre><code>
+[ERROR] Error durante la ejecución de la prueba Prueba personalizada - Economy Comfort - con asiento: page.goto: net::ERR_CONNECTION_TIMED_OUT at https://lv-fndoor-ecommerce-sbx-ghdubdbgdtcsane6.a01.azurefd.net/?searchFlightBkn=APS
+Call log:
+[2m  - navigating to &quot;https://lv-fndoor-ecommerce-sbx-ghdubdbgdtcsane6.a01.azurefd.net/?searchFlightBkn=APS&quot;, waiting until &quot;load&quot;[22m
+
+    at LevelTestRunner.initialize [90m(C:\playwright-project\[39msrc\utils\test-framework.ts:116:21[90m)[39m
+    at LevelTestRunner.runCompleteTest [90m(C:\playwright-project\[39msrc\utils\test-framework.ts:1174:18[90m)[39m
+    at runSingleTest [90m(C:\playwright-project\[39msrc\utils\test-framework.ts:1416:34[90m)[39m
+    at [90mC:\playwright-project\[39msrc\tests\Booking\seat-custom-cabins-rt.spec.ts:42:7 {
+  name: [32m&#x27;Error&#x27;[39m,
+  [[32mSymbol(step)[39m]: {
+    stepId: [32m&#x27;pw:api@6&#x27;[39m,
+    location: {
+      file: [32m&#x27;C:\\playwright-project\\src\\utils\\test-framework.ts&#x27;[39m,
+      line: [33m116[39m,
+      column: [33m21[39m,
+      function: [32m&#x27;LevelTestRunner.initialize&#x27;[39m
+    },
+    category: [32m&#x27;pw:api&#x27;[39m,
+    title: [32m&#x27;page.goto(https://lv-fndoor-ecommerce-sbx-ghdubdbgdtcsane6.a01.azurefd.net/?searchFlightBkn=APS)&#x27;[39m,
+    apiName: [32m&#x27;page.goto&#x27;[39m,
+    params: {
+      url: [32m&#x27;https://lv-fndoor-ecommerce-sbx-ghdubdbgdtcsane6.a01.azurefd.net/?searchFlightBkn=APS&#x27;[39m,
+      waitUntil: [32m&#x27;load&#x27;[39m
+    },
+    boxedStack: [90mundefined[39m,
+    steps: [],
+    complete: [36m[Function: complete][39m,
+    endWallTime: [33m1745857437492[39m,
+    error: {
+      message: [32m&#x27;Error: page.goto: net::ERR_CONNECTION_TIMED_OUT at https://lv-fndoor-ecommerce-sbx-ghdubdbgdtcsane6.a01.azurefd.net/?searchFlightBkn=APS\n&#x27;[39m +
+        [32m&#x27;Call log:\n&#x27;[39m +
+        [32m&#x27;\x1B[2m  - navigating to &quot;https://lv-fndoor-ecommerce-sbx-ghdubdbgdtcsane6.a01.azurefd.net/?searchFlightBkn=APS&quot;, waiting until &quot;load&quot;\x1B[22m\n&#x27;[39m,
+      stack: [32m&#x27;Error: page.goto: net::ERR_CONNECTION_TIMED_OUT at https://lv-fndoor-ecommerce-sbx-ghdubdbgdtcsane6.a01.azurefd.net/?searchFlightBkn=APS\n&#x27;[39m +
+        [32m&#x27;Call log:\n&#x27;[39m +
+        [32m&#x27;\x1B[2m  - navigating to &quot;https://lv-fndoor-ecommerce-sbx-ghdubdbgdtcsane6.a01.azurefd.net/?searchFlightBkn=APS&quot;, waiting until &quot;load&quot;\x1B[22m\n&#x27;[39m +
+        [32m&#x27;\n&#x27;[39m +
+        [32m&#x27;    at LevelTestRunner.initialize (C:\\playwright-project\\src\\utils\\test-framework.ts:116:21)\n&#x27;[39m +
+        [32m&#x27;    at LevelTestRunner.runCompleteTest (C:\\playwright-project\\src\\utils\\test-framework.ts:1174:18)\n&#x27;[39m +
+        [32m&#x27;    at runSingleTest (C:\\playwright-project\\src\\utils\\test-framework.ts:1416:34)\n&#x27;[39m +
+        [32m&#x27;    at C:\\playwright-project\\src\\tests\\Booking\\seat-custom-cabins-rt.spec.ts:42:7&#x27;[39m,
+      cause: [90mundefined[39m
+    }
+  }
+}
+Error al seleccionar país y fecha: apiRequestContext.get: Connection timeout
+Call log:
+[2m  - → GET https://apis-dev.airpricing.net/schedule/operability/BCN-SCL/calendar?Definition=5c7bab97-9372-4fe0-873e-0fcb0047baab[22m
+[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.33 Safari/537.36[22m
+[2m    - accept: */*[22m
+[2m    - accept-encoding: gzip,deflate,br[22m
+[2m    - Authorization: Bearer tu_token[22m
+[2m    - Ocp-Apim-Subscription-Key: 8053997ae5704182814a765c480da09a[22m
+
+Error managing round trip flow: apiRequestContext.get: Connection timeout
+Call log:
+[2m  - → GET https://apis-dev.airpricing.net/schedule/operability/BCN-SCL/calendar?Definition=5c7bab97-9372-4fe0-873e-0fcb0047baab[22m
+[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.33 Safari/537.36[22m
+[2m    - accept: */*[22m
+[2m    - accept-encoding: gzip,deflate,br[22m
+[2m    - Authorization: Bearer tu_token[22m
+[2m    - Ocp-Apim-Subscription-Key: 8053997ae5704182814a765c480da09a[22m
+
+[WARN] Error en selectFlightDates (intento 1/2): apiRequestContext.get: Connection timeout
+Call log:
+[2m  - → GET https://apis-dev.airpricing.net/schedule/operability/BCN-SCL/calendar?Definition=5c7bab97-9372-4fe0-873e-0fcb0047baab[22m
+[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.33 Safari/537.36[22m
+[2m    - accept: */*[22m
+[2m    - accept-encoding: gzip,deflate,br[22m
+[2m    - Authorization: Bearer tu_token[22m
+[2m    - Ocp-Apim-Subscription-Key: 8053997ae5704182814a765c480da09a[22m
+ [90mundefined[39m
+[WARN] URL después de selección de vuelos no es la esperada: https://lv-fndoor-ecommerce-sbx-ghdubdbgdtcsane6.a01.azurefd.net/nwe/passenger/?forcedCulture=en [90mundefined[39m
+[WARN] No se detectaron pestañas para vuelo de vuelta, intentando seleccionar asientos sin cambiar pestaña [90mundefined[39m
+
+</code></pre>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<div class="list-group-item test-item skipped-test" 
+     data-trip="UNKNOWN" 
+     data-passenger="UNKNOWN" 
+     data-cabin="UNKNOWN"
+     data-service="UNKNOWN"
+     data-seat="UNKNOWN"
+     data-currency="UNKNOWN"
+     data-language="UNKNOWN">
+    <div class="d-flex w-100 justify-content-between align-items-start mb-2">
+        <h6 class="mb-1">
+            <i class="bi bi-skip-forward-fill text-warning me-2"></i>
+            Pruebas de cabinas con selección de asiento › RT-MULTI-MIXED-MIXED-SEAT-USD-EN-102: Todas las pruebas básicas con asiento
+        </h6>
+        <span class="badge bg-light text-dark">
+            <i class="bi bi-clock"></i>
+            0.00s
+        </span>
+    </div>
+    
+    
+    
+    
+</div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-light py-3 mt-4">
+        <div class="container text-center">
+            <p class="mb-0 text-muted">
+                <small>Generado por PlaywrightXmlReportBeautifier</small>
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Funciones para manejar los filtros del tipo de viaje
+        function updateTripFilters(checkbox) {
+            const allCheckbox = document.getElementById('trip-all');
+            const tripCheckboxes = document.querySelectorAll('#trip-type-filters input[type="checkbox"]:not(#trip-all)');
+            
+            if (checkbox.id === 'trip-all' && checkbox.checked) {
+                // Si "Todos" está marcado, desmarcar los demás
+                tripCheckboxes.forEach(cb => { cb.checked = false; });
+            } else if (checkbox.id !== 'trip-all' && checkbox.checked) {
+                // Si algún otro está marcado, desmarcar "Todos"
+                allCheckbox.checked = false;
+            }
+            
+            // Si no hay ninguno marcado, marcar "Todos"
+            const someChecked = [...tripCheckboxes].some(cb => cb.checked);
+            if (!someChecked) {
+                allCheckbox.checked = true;
+            }
+            
+            applyFilters();
+        }
+
+        // Funciones para manejar los filtros de pasajeros
+        function updatePassengerFilters(checkbox) {
+            const allCheckbox = document.getElementById('passenger-all');
+            const passengerCheckboxes = document.querySelectorAll('#passenger-filters input[type="checkbox"]:not(#passenger-all)');
+            
+            if (checkbox.id === 'passenger-all' && checkbox.checked) {
+                // Si "Todos" está marcado, desmarcar los demás
+                passengerCheckboxes.forEach(cb => { cb.checked = false; });
+            } else if (checkbox.id !== 'passenger-all' && checkbox.checked) {
+                // Si algún otro está marcado, desmarcar "Todos"
+                allCheckbox.checked = false;
+            }
+            
+            // Si no hay ninguno marcado, marcar "Todos"
+            const someChecked = [...passengerCheckboxes].some(cb => cb.checked);
+            if (!someChecked) {
+                allCheckbox.checked = true;
+            }
+            
+            applyFilters();
+        }
+
+        // Funciones para manejar los filtros de cabina
+        function updateCabinFilters(checkbox) {
+            const allCheckbox = document.getElementById('cabin-all');
+            const cabinCheckboxes = document.querySelectorAll('#cabin-filters input[type="checkbox"]:not(#cabin-all)');
+            
+            if (checkbox.id === 'cabin-all' && checkbox.checked) {
+                // Si "Todos" está marcado, desmarcar los demás
+                cabinCheckboxes.forEach(cb => { cb.checked = false; });
+            } else if (checkbox.id !== 'cabin-all' && checkbox.checked) {
+                // Si algún otro está marcado, desmarcar "Todos"
+                allCheckbox.checked = false;
+            }
+            
+            // Si no hay ninguno marcado, marcar "Todos"
+            const someChecked = [...cabinCheckboxes].some(cb => cb.checked);
+            if (!someChecked) {
+                allCheckbox.checked = true;
+            }
+            
+            applyFilters();
+        }
+
+        // Funciones para manejar los filtros de servicios
+        function updateServiceFilters(checkbox) {
+            const allCheckbox = document.getElementById('service-all');
+            const serviceCheckboxes = document.querySelectorAll('#service-filters input[type="checkbox"]:not(#service-all)');
+            
+            if (checkbox.id === 'service-all' && checkbox.checked) {
+                // Si "Todos" está marcado, desmarcar los demás
+                serviceCheckboxes.forEach(cb => { cb.checked = false; });
+            } else if (checkbox.id !== 'service-all' && checkbox.checked) {
+                // Si algún otro está marcado, desmarcar "Todos"
+                allCheckbox.checked = false;
+            }
+            
+            // Si no hay ninguno marcado, marcar "Todos"
+            const someChecked = [...serviceCheckboxes].some(cb => cb.checked);
+            if (!someChecked) {
+                allCheckbox.checked = true;
+            }
+            
+            applyFilters();
+        }
+
+        // Función para obtener los valores de los filtros seleccionados
+        function getSelectedFilters(filterName) {
+            const allCheckbox = document.getElementById(`${filterName}-all`);
+            if (allCheckbox.checked) {
+                return ['all'];
+            }
+            
+            const checkboxes = document.querySelectorAll(`#${filterName}-filters input[type="checkbox"]:checked:not(#${filterName}-all)`);
+            return [...checkboxes].map(cb => cb.value);
+        }
+
+        // Función principal para aplicar todos los filtros
+        function applyFilters() {
+            // Obtener valores de filtros
+            const statusFilter = window.selectedStatus || 'all';
+            const tripFilters = getSelectedFilters('trip');
+            const passengerFilters = getSelectedFilters('passenger');
+            const cabinFilters = getSelectedFilters('cabin');
+            const serviceFilters = getSelectedFilters('service');
+            
+            // Seleccionar todos los elementos de test
+            const testItems = document.querySelectorAll('.test-item');
+            
+            // Objeto para hacer seguimiento de qué suites tienen tests visibles
+            const suitesWithVisibleTests = {};
+            
+            // Filtrar los elementos según todos los filtros seleccionados
+            testItems.forEach(item => {
+                // Verificar el estado (passed/failed/skipped)
+                const hasStatusClass = statusFilter === 'all' || item.classList.contains(`${statusFilter}-test`);
+                
+                // Obtener atributos data del elemento
+                const tripType = item.getAttribute('data-trip');
+                const passengerType = item.getAttribute('data-passenger');
+                const cabinType = item.getAttribute('data-cabin');
+                const serviceType = item.getAttribute('data-service');
+                const seatType = item.getAttribute('data-seat');
+                
+                // Verificar si coincide con los filtros seleccionados
+                const matchesTrip = tripFilters.includes('all') || tripFilters.includes(tripType);
+                const matchesPassenger = passengerFilters.includes('all') || passengerFilters.includes(passengerType);
+                
+                // Para cabina, verificar si es una combinación o una cabina simple
+                let matchesCabin = cabinFilters.includes('all');
+                if (!matchesCabin) {
+                    if (cabinType && cabinType.includes('_') && cabinFilters.includes('MIXED')) {
+                        matchesCabin = true;
+                    } else {
+                        // Verificar si alguna de las cabinas seleccionadas está en el tipo de cabina del test
+                        matchesCabin = cabinFilters.some(cabin => cabinType && cabinType.includes(cabin));
+                    }
+                }
+                
+                // Para servicios, verificar tanto la asistencia como el asiento
+                const matchesService = serviceFilters.includes('all') || 
+                                     serviceFilters.some(service => 
+                                       service === serviceType || service === seatType
+                                     );
+                
+                // Obtener el ID de la suite padre
+                const suiteCollapse = item.closest('.accordion-collapse');
+                const suiteId = suiteCollapse ? suiteCollapse.id : null;
+                
+                // Mostrar solo si cumple con todos los filtros
+                if (hasStatusClass && matchesTrip && matchesPassenger && matchesCabin && matchesService) {
+                    item.style.display = ''; // Mostrar el elemento
+                    
+                    // Marcar esta suite como que tiene tests visibles
+                    if (suiteId) {
+                        suitesWithVisibleTests[suiteId] = true;
+                    }
+                } else {
+                    item.style.display = 'none'; // Ocultar el elemento
+                }
+            });
+            
+            // Expandir automáticamente las suites que tienen tests visibles
+            for (const suiteId in suitesWithVisibleTests) {
+                const suiteElement = document.getElementById(suiteId);
+                if (suiteElement && !suiteElement.classList.contains('show')) {
+                    // Obtener el botón del acordeón
+                    const button = document.querySelector(`[data-bs-target="#${suiteId}"]`);
+                    if (button && button.classList.contains('collapsed')) {
+                        // Crear y disparar un evento para abrir el acordeón
+                        const bsCollapse = new bootstrap.Collapse(suiteElement);
+                        bsCollapse.show();
+                        
+                        // Actualizar la apariencia del botón
+                        button.classList.remove('collapsed');
+                        button.setAttribute('aria-expanded', 'true');
+                    }
+                }
+            }
+        }
+
+        // Inicializar cuando el DOM esté cargado
+        document.addEventListener('DOMContentLoaded', function() {
+            // Aplicar el filtro "todos" al inicio
+            window.selectedStatus = 'all';
+            
+            // Toggles para pasos, errores y adjuntos
+            document.querySelectorAll('.steps-toggle, .error-toggle, .attachments-toggle, .logs-toggle').forEach(toggle => {
+                toggle.addEventListener('click', function() {
+                    const caretRight = this.querySelector('.bi-caret-right-fill');
+                    const caretDown = this.querySelector('.bi-caret-down-fill');
+                    
+                    if (this.classList.contains('collapsed')) {
+                        caretRight.classList.add('d-none');
+                        caretDown.classList.remove('d-none');
+                    } else {
+                        caretRight.classList.remove('d-none');
+                        caretDown.classList.add('d-none');
+                    }
+                });
+            });
+
+            // Colorear los logs
+            document.querySelectorAll('.system-out pre code').forEach(block => {
+                const html = block.innerHTML;
+                
+                // Expresiones regulares corregidas con escape adecuado para los corchetes
+                const coloredHtml = html
+                    .replace(/\[INFO\](.*?)(?=(\[|
+|$))/g, '<span class="log-info">[INFO]$1</span>')
+                    .replace(/\[WARN\](.*?)(?=(\[|
+|$))/g, '<span class="log-warn">[WARN]$1</span>')
+                    .replace(/\[ERROR\](.*?)(?=(\[|
+|$))/g, '<span class="log-error">[ERROR]$1</span>');
+                
+                block.innerHTML = coloredHtml;
+            });
+
+            // Colorear los errores
+            document.querySelectorAll('.system-err pre code').forEach(block => {
+                const html = block.innerHTML;
+                
+                // Reemplazar las líneas que comienzan con [WARN]
+                const coloredHtml = html
+                    .replace(/\[WARN\](.*?)(?=(\[|
+|$))/g, '<span class="log-warn">[WARN]$1</span>')
+                    .replace(/\[ERROR\](.*?)(?=(\[|
+|$))/g, '<span class="log-error">[ERROR]$1</span>');
+                
+                block.innerHTML = coloredHtml;
+            });
+            
+            // Aplicar el filtro "todos" al inicio para expandir los acordeones
+            applyFilters();
+        });
+    </script>
+</body>
+</html>
